@@ -1,0 +1,1 @@
+$ ./gradlew run -PmainClass=chapter2.hello.HelloVerticle
