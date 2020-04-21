@@ -60,3 +60,11 @@ Single.zip(s1, s2, (luke, leia) -> {
   
 ===========================
 
+EventBus bus = vertx.eventBus(); 
+Single<JsonObject> obs1 =  bus.<JsonObject>rxSend("hello", "Luke") 
+                              .subscribeOn(RxHelper.scheduler(vertx)) 
+                              .timeout(3, TimeUnit.SECONDS)
+                              .retry()
+                              .map(Message::body);
+  
+  
