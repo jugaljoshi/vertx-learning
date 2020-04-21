@@ -46,5 +46,17 @@ private Single<JsonObject> sendToSnapshot(Single<JsonObject> data) {
 //programming enthusiasts. Do not worry if flatMap sounds cryptic to you: 
 //in the case of composing sequential asynchronous operations you can just read "flatmap" as "and then".
 
-
+Single.zip(s1, s2, (luke, leia) -> {
+// We have the results of both requests in Luke and Leia 
+  return new JsonObject()
+    .put("Luke", luke.getString("message")) 
+    .put("Leia", leia.getString("message"));
+}) 
+  .subscribe(
+    result -> rc.response().end(result.encodePrettily()), 
+    error -> {error.printStackTrace(); rc.response()
+.setStatusCode(500).end(error.getMessage()); 
+}
+  
+===========================
 
