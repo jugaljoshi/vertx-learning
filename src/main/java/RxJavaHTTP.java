@@ -115,6 +115,21 @@ private void forwardJsonOrStatusCode(RoutingContext ctx, HttpResponse<JsonObject
   
 =====================  
   
-  
+WebClient webClient = WebClient.create(vertx);
+webClient
+  .get(3001, "localhost", "/ranking-last-24-hours")
+  .as(BodyCodec.jsonArray())
+  .rxSend()
+  .delay(5, TimeUnit.SECONDS, RxHelper.scheduler(vertx))
+  .retry(5)
+  .map(HttpResponse::body)
+  .flattenAsFlowable(Functions.identity())
+  .cast(JsonObject.class)
+  .flatMapSingle(json -> whoOwnsDevice(webClient, json))
+  .flatMapSingle(json -> fillWithUserProfile(webClient, json))
+  .subscribe(
+    this::hydrateEntryIfPublic,
+    err -> logger.error("Hydratation error", err),
+    () -> logger.info("Hydratation completed"));
   
   
