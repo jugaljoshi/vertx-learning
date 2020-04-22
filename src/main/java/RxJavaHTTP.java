@@ -68,3 +68,53 @@ Single<JsonObject> obs1 =  bus.<JsonObject>rxSend("hello", "Luke")
                               .map(Message::body);
   
   
+  ==================== RxClient post
+  
+private void register(RoutingContext ctx) {
+  webClient
+    .post(3000, "localhost", "/register")
+    .putHeader("Content-Type", "application/json")
+    .rxSendJson(ctx.getBodyAsJson())
+    .subscribe(
+      response -> sendStatusCode(ctx, response.statusCode()),
+      err -> sendBadGateway(ctx, err));
+}
+
+private void sendStatusCode(RoutingContext ctx, int code) {
+  ctx.response().setStatusCode(code).end();
+}
+
+private void sendBadGateway(RoutingContext ctx, Throwable err) {
+  logger.error("Woops", err);
+  ctx.fail(502);
+}
+
+======================== RxClient get
+
+
+private void fetchUser(RoutingContext ctx) {
+  webClient
+    .get(3000, "localhost", "/" + ctx.pathParam("username"))
+    .as(BodyCodec.jsonObject())
+    .rxSend()
+    .subscribe(
+      resp -> forwardJsonOrStatusCode(ctx, resp),
+      err -> sendBadGateway(ctx, err));
+}
+
+private void forwardJsonOrStatusCode(RoutingContext ctx, HttpResponse<JsonObject> resp) {
+  if (resp.statusCode() != 200) {
+    sendStatusCode(ctx, resp.statusCode());
+  } else {
+    ctx.response()
+      .putHeader("Content-Type", "application/json")
+      .end(resp.body().encode());
+  }
+} 
+  
+  
+=====================  
+  
+  
+  
+  
